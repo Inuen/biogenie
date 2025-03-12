@@ -144,8 +144,10 @@ dependencies = [
 name = "biogenie"
 version = "0.1.0"
 dependencies = [
+ "aho-corasick",
  "bio",
  "csv",
+ "memchr",
  "nucgen",
  "rand 0.8.5",
  "rayon",
