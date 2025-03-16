@@ -146,7 +146,9 @@ version = "0.1.0"
 dependencies = [
  "aho-corasick",
  "bio",
+ "bitap",
  "csv",
+ "itertools",
  "memchr",
  "nucgen",
  "rand 0.8.5",
@@ -169,6 +171,12 @@ name = "bit-vec"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5e764a1d40d510daf35e07be9eb06e75770908c27d411ee6c92109c9840eaaf7"
+
+[[package]]
+name = "bitap"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ce884824d1418832147e2a4039b2a57ad24022a858760d2ba14c14d45e09ca4e"
 
 [[package]]
 name = "bitflags"

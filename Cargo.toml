@@ -5,6 +5,8 @@ edition = "2024"
 
 [dependencies]
 bio = "2.2.0"
+bitap = "0.2.0"
+itertools = "0.14.0"
 rayon = "1.10.0"
 rustc-hash = "2.1.1"
 memchr = "2.7.4"
