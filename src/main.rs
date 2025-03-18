@@ -92,17 +92,12 @@ fn remove_using_bom(sequence: &[u8], adapter: &[u8], allow_multiple_matches: &bo
     trimmed
 }
 
-fn remove_using_bitap(
-    sequence: &str,
-    adapter: &str,
-    allow_multiple_matches: &bool,
-    allowed_levenshtein_distance: usize,
-) -> Vec<u8> {
+fn remove_using_bitap(sequence: &str, adapter: &str, allow_multiple_matches: &bool) -> Vec<u8> {
     let pattern = Pattern::new(adapter).expect("adapter is too long fir bitap");
     let mut trimmed = Vec::with_capacity(sequence.len());
+    let allowed_levenshtein_distance: usize = 0; // TODO should be arg
 
-    let max_distance = 0;
-    let matches = pattern.lev(sequence, max_distance);
+    let matches = pattern.lev(sequence, allowed_levenshtein_distance);
     let mut last_match_end_idx = 0;
     // Bitap doesn't inherently return matches in left to right order
     for adapter_match in matches.sorted_by(|m1, m2| m2.end.cmp(&m1.end)) {
@@ -142,6 +137,25 @@ fn remove_exact_using_memchcr(
     trimmed
 }
 
+fn remove_using_two_way(sequence: &[u8], adapter: &[u8], allow_multiple_matches: &bool) -> Vec<u8> {
+    let mut read_idx = 0;
+    let mut trimmed = Vec::with_capacity(sequence.len());
+
+    while let Some(idx) = twoway::find_bytes(&sequence[read_idx..], adapter) {
+        let adapter_idx = idx + read_idx;
+        trimmed.extend_from_slice(&sequence[read_idx..adapter_idx]);
+
+        read_idx = adapter_idx + adapter.len();
+
+        if !allow_multiple_matches {
+            break;
+        }
+    }
+    trimmed.extend_from_slice(&sequence[read_idx..]);
+
+    trimmed
+}
+
 #[derive(Clone, Debug)]
 enum TrimmingModes {
     AtStartOnly,
@@ -152,12 +166,12 @@ enum TrimmingModes {
 }
 
 #[derive(Clone)]
-enum Tasks {
+enum Tasks<'a> {
     CountKMers(usize),
     TrimAdapt {
         mode: TrimmingModes,
-        sequence: &'static [u8],
-        adapter: &'static [u8],
+        sequence: &'a [u8],
+        adapter: &'a [u8],
         allow_multiple_matches: bool,
         fuzzy_matching: bool,
     },
@@ -166,7 +180,7 @@ enum Tasks {
 fn main() {
     let contents = fs::read_to_string("data/inputs/sequence_100_000_000.txt")
         .expect("Should have been able to read the file");
-    let adapter = "GTGGCTACATCCCGTCTGGGTACATGCTAACGTATCTTGACACAA";
+    let adapter = "TCGCAAACTGATCATGGTGGCTACATCCCGTCTGGGTACATGCTAACGTATCTTGACACAACG";
     let mut results: Vec<Vec<u8>> = Vec::new();
     let mut len: usize = 0;
 
@@ -197,11 +211,20 @@ fn main() {
 
     println!("bitap");
     timeit!({
-        let a = remove_using_bitap(contents.as_str(), adapter, &true, 0);
+        let a = remove_using_bitap(contents.as_str(), adapter, &true);
         len = a.len();
         results.push(a);
     });
     println!("BITAP l {}", len);
+
+    println!("twoway");
+    timeit!({
+        let a = remove_using_two_way(contents.as_bytes(), adapter.as_bytes(), &true);
+        len = a.len();
+        results.push(a);
+    });
+    println!("twoway l {}", len);
+
 
     assert!(results.iter().all_equal_value().is_ok());
 }
