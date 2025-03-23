@@ -3,6 +3,13 @@ name = "biogenie"
 version = "0.1.0"
 edition = "2024"
 
+[dev-dependencies]
+criterion = "0.5.1"
+
+[[bench]]
+name = "compare_benchmarks"
+harness = false
+
 [dependencies]
 bio = "2.2.0"
 bitap = "0.2.0"
